@@ -1,0 +1,46 @@
+#include <windows.h>
+#include "resource.h"
+
+IDD_SETTINGS DIALOGEX 0, 0, 360, 312
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DeepSeek 消费插件设置"
+FONT 9, "Microsoft YaHei UI", 400, 0, 0x86
+BEGIN
+    LTEXT           "API Key：", -1, 12, 14, 48, 10
+    EDITTEXT        IDC_API_KEY, 66, 12, 200, 14, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "", IDC_API_KEY_STATUS, 272, 14, 76, 10
+    PUSHBUTTON      "清除", IDC_CLEAR_KEY, 272, 28, 34, 14
+
+    LTEXT           "估算刷新间隔（秒）：", -1, 12, 38, 88, 10
+    EDITTEXT        IDC_BALANCE_INTERVAL, 104, 36, 54, 14, ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "30 - 3600", -1, 164, 38, 60, 10
+
+    LTEXT           "币种：", -1, 12, 60, 32, 10
+    COMBOBOX        IDC_CURRENCY, 46, 58, 96, 80, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "日界：", -1, 180, 60, 32, 10
+    COMBOBOX        IDC_DAY_BOUNDARY, 214, 58, 132, 80, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+
+    GROUPBOX        "精确模式（非官方平台接口）", -1, 10, 82, 340, 174
+    CONTROL         "启用精确模式", IDC_EXACT_ENABLED, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 20, 96, 120, 12
+
+    LTEXT           "userToken：", -1, 20, 118, 52, 10
+    EDITTEXT        IDC_USER_TOKEN, 76, 116, 190, 14, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "", IDC_TOKEN_STATUS, 272, 118, 76, 10
+    PUSHBUTTON      "清除", IDC_CLEAR_TOKEN, 272, 132, 34, 14
+    LTEXT           "Token 是平台登录会话，比 API Key 更敏感；", -1, 20, 140, 245, 10
+    LTEXT           "会过期，需重新粘贴。", -1, 20, 150, 150, 10
+
+    PUSHBUTTON      "获取说明", IDC_TOKEN_HELP, 20, 164, 58, 16
+    PUSHBUTTON      "打开平台用量页", IDC_OPEN_USAGE, 84, 164, 88, 16
+    PUSHBUTTON      "测试连接", IDC_TEST_EXACT, 178, 164, 58, 16
+
+    LTEXT           "精确刷新间隔（秒）：", -1, 20, 192, 88, 10
+    EDITTEXT        IDC_EXACT_INTERVAL, 112, 190, 54, 14, ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "60 - 3600", -1, 172, 192, 60, 10
+
+    PUSHBUTTON      "测试 API Key", IDC_TEST_BALANCE, 20, 212, 70, 16
+
+    LTEXT           "API Key 只发往 api.deepseek.com；userToken 只发往 platform.deepseek.com。", -1, 10, 266, 340, 10
+    DEFPUSHBUTTON   "确定", IDOK, 238, 286, 52, 16
+    PUSHBUTTON      "取消", IDCANCEL, 296, 286, 52, 16
+END
