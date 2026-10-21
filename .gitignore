@@ -9,3 +9,6 @@ dist/
 .vscode/
 .idea/
 Thumbs.db
+
+userToken.txt
+*.token
