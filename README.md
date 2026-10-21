@@ -14,19 +14,17 @@
 
 ## 下载
 
-- 推荐从 GitHub Releases 下载 `TrafficMonitor-DeepSeekSpend-v1.0.0.zip`（包含 DLL、安装/卸载脚本和说明）。
+- 从 GitHub Releases 下载 `DeepSeekUsage.dll`。
 - 也可以从源码构建（见下文）。
 
 ## 安装
 
-1. 从 Release 下载并解压 zip（源码树中对应 `dist\`）。
-2. 运行解压目录中的 `install.bat`。它会弹出 UAC，然后自动关闭 TrafficMonitor、复制 DLL 并重新启动。
-3. 右键任务栏窗口或托盘图标 → **显示设置** → 勾选 **DeepSeek今日消费**（可选再勾选 **DeepSeek余额**）→ 确定。
+1. 关闭 TrafficMonitor。
+2. 把 `DeepSeekUsage.dll` 复制到 `C:\Program Files\TrafficMonitor\plugins\`（需要管理员权限）。
+3. 启动 TrafficMonitor，右键任务栏窗口或托盘图标 → **显示设置** → 勾选 **DeepSeek今日消费**（可选再勾选 **DeepSeek余额**）→ 确定。
 4. 打开 TrafficMonitor **选项 → 常规设置 → 插件管理 → DeepSeek消费 → 设置**：
    - 填入 API Key，点 **测试 API Key**，确认能读到余额，然后保存。
    - 可选：勾选 **启用精确模式**，粘贴 platform.deepseek.com 的 `userToken`，点 **测试连接**。
-
-手动安装：把 `DeepSeekUsage.dll` 复制到 `C:\Program Files\TrafficMonitor\plugins\`，重启 TrafficMonitor。
 
 ## 任务栏显示
 
@@ -90,7 +88,7 @@ mingw32-make                     # 生成 build\DeepSeekUsage.dll
 mingw32-make test-dll            # 生成带测试钩子的 build\DeepSeekUsage_test.dll
 ```
 
-构建后可把 `build\DeepSeekUsage.dll` 复制到 `dist\`，再运行 `dist\install.bat`；或直接复制到 `C:\Program Files\TrafficMonitor\plugins\`。
+构建后把 `build\DeepSeekUsage.dll` 复制到 `C:\Program Files\TrafficMonitor\plugins\`，重启 TrafficMonitor。
 
 测试：
 
@@ -108,7 +106,6 @@ build\plugin_test.exe                   # 加载测试 DLL，验证估算/精确
 include/PluginInterface.h   TrafficMonitor 插件 SDK 头文件
 src/                        插件源码
 tests/                      单元测试、mock 服务器、插件测试、截图脚本
-dist/                       安装脚本（DLL 从 Release 下载或自行构建）
 LICENSES/                   第三方许可证全文
 LICENSE                     本项目原始代码的 MIT 许可证
 THIRD_PARTY_NOTICES.md      第三方代码归属
@@ -117,7 +114,7 @@ build/                      构建产物
 
 ## 卸载
 
-运行 `uninstall.bat`（UAC），按提示选择是否删除配置和加密凭据。
+关闭 TrafficMonitor，删除 `C:\Program Files\TrafficMonitor\plugins\DeepSeekUsage.dll`。如需同时删除配置和加密凭据，删除 `%APPDATA%\TrafficMonitor\plugins\DeepSeekUsage.ini` 和 `%APPDATA%\TrafficMonitor\plugins\DeepSeekUsage.log`。
 
 ## 许可与免责
 

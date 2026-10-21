@@ -1,7 +1,7 @@
 build/
 test-run/
 test_host.ps1
-dist/DeepSeekUsage.dll
+dist/
 *.log
 *.tmp
 *.png
