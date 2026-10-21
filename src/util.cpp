@@ -256,6 +256,43 @@ std::wstring FormatMicros(int64_t micros)
     return FormatCents(MicrosToCents(micros));
 }
 
+namespace {
+
+std::wstring FormatTenthsValue(int64_t tenths)
+{
+    const bool negative = tenths < 0;
+    const uint64_t absolute = negative
+        ? static_cast<uint64_t>(-(tenths + 1)) + 1
+        : static_cast<uint64_t>(tenths);
+    const uint64_t whole = absolute / 10;
+    const uint64_t fraction = absolute % 10;
+
+    wchar_t buffer[64]{};
+    swprintf(buffer, 64, L"%ls%llu.%llu",
+             negative ? L"-" : L"",
+             static_cast<unsigned long long>(whole),
+             static_cast<unsigned long long>(fraction));
+    return buffer;
+}
+
+} // namespace
+
+std::wstring FormatCents1(int64_t cents)
+{
+    const int64_t tenths = cents >= 0
+        ? (cents + 5) / 10
+        : -((-cents + 5) / 10);
+    return FormatTenthsValue(tenths);
+}
+
+std::wstring FormatMicros1(int64_t micros)
+{
+    const int64_t tenths = micros >= 0
+        ? (micros + 50000) / 100000
+        : -((-micros + 50000) / 100000);
+    return FormatTenthsValue(tenths);
+}
+
 std::wstring CurrencySymbol(const std::wstring& currency)
 {
     const std::wstring normalized = NormalizeCurrency(currency);
@@ -279,6 +316,16 @@ std::wstring FormatAmountCents(int64_t cents, const std::wstring& currency)
 std::wstring FormatAmountMicros(int64_t micros, const std::wstring& currency)
 {
     return CurrencySymbol(currency) + FormatMicros(micros);
+}
+
+std::wstring FormatAmountCents1(int64_t cents, const std::wstring& currency)
+{
+    return CurrencySymbol(currency) + FormatCents1(cents);
+}
+
+std::wstring FormatAmountMicros1(int64_t micros, const std::wstring& currency)
+{
+    return CurrencySymbol(currency) + FormatMicros1(micros);
 }
 
 std::wstring ToLowerAscii(const std::wstring& text)

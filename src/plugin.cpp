@@ -88,12 +88,12 @@ void CDeepSeekItemBase::SetValue(std::wstring value)
 }
 
 CTodayItem::CTodayItem()
-    : CDeepSeekItemBase(L"DeepSeek今日消费", L"DeepSeekToday", L"", L"≈¥8888.88")
+    : CDeepSeekItemBase(L"DeepSeek今日消费", L"DeepSeekToday", L"", L"≈¥999.9")
 {
 }
 
 CBalanceItem::CBalanceItem()
-    : CDeepSeekItemBase(L"DeepSeek余额", L"DeepSeekBalance", L"余额: ", L"余额: ¥8888.88")
+    : CDeepSeekItemBase(L"DeepSeek余额", L"DeepSeekBalance", L"余额: ", L"¥999.9")
 {
 }
 
@@ -146,7 +146,7 @@ const wchar_t* CDeepSeekPlugin::GetInfo(PluginInfoIndex index)
     case TMI_COPYRIGHT:
         return L"© 2026";
     case TMI_VERSION:
-        return L"1.0.0";
+        return L"1.01";
     case TMI_URL:
         return L"";
     default:
@@ -574,12 +574,12 @@ void CDeepSeekPlugin::RebuildDisplayLocked(std::time_t now)
         const std::wstring exact_currency =
             m_exact_currency.empty() ? display_currency : m_exact_currency;
         m_today_text = (exact_stale ? L"≈" : L"") +
-                       FormatAmountMicros(m_exact_cost_micros, exact_currency);
+                       FormatAmountMicros1(m_exact_cost_micros, exact_currency);
     } else {
         const auto state_it = m_ledger.currencies.find(display_currency);
         const std::wstring today = DayKey(now, m_config.day_boundary);
         if (state_it != m_ledger.currencies.end() && state_it->second.date == today) {
-            m_today_text = L"≈" + FormatAmountCents(state_it->second.spend_cents, display_currency);
+            m_today_text = L"≈" + FormatAmountCents1(state_it->second.spend_cents, display_currency);
         } else {
             m_today_text = L"--";
         }
@@ -589,7 +589,7 @@ void CDeepSeekPlugin::RebuildDisplayLocked(std::time_t now)
         !has_selected || selected_entry == nullptr) {
         m_balance_text = L"--";
     } else {
-        m_balance_text = FormatAmountCents(selected_entry->total_cents, display_currency);
+        m_balance_text = FormatAmountCents1(selected_entry->total_cents, display_currency);
     }
 
     m_today.SetValue(m_today_text);
@@ -659,13 +659,13 @@ void CDeepSeekPlugin::BuildTooltipLocked(std::time_t now)
     } else if (!has_selected || selected_entry == nullptr) {
         add_line(L"余额：--" + (m_has_balance_error ? L"（" + m_balance_error + L"）" : L""));
     } else {
-        add_line(L"余额：" + FormatAmountCents(selected_entry->total_cents, display_currency) +
+        add_line(L"余额：" + FormatAmountCents1(selected_entry->total_cents, display_currency) +
                  L" " + display_currency);
-        add_line(L"赠送 " + FormatAmountCents(selected_entry->granted_cents, display_currency) +
-                 L" / 充值 " + FormatAmountCents(selected_entry->topped_up_cents, display_currency));
+        add_line(L"赠送 " + FormatAmountCents1(selected_entry->granted_cents, display_currency) +
+                 L" / 充值 " + FormatAmountCents1(selected_entry->topped_up_cents, display_currency));
         if (other_entry != nullptr) {
             add_line(other_currency + L" 余额：" +
-                     FormatAmountCents(other_entry->total_cents, other_currency));
+                     FormatAmountCents1(other_entry->total_cents, other_currency));
         }
         if (m_has_balance_error) {
             add_line(L"余额接口错误：" + m_balance_error + L"（显示上次数据）");

@@ -117,8 +117,8 @@ int main(int argc, char** argv)
     PrintValue("balance", balance);
     PrintValue("tooltip (estimate)", tooltip);
 
-    Check(today == L"≈¥0.42", L"estimate value");
-    Check(balance == L"¥99.58", L"balance value");
+    Check(today == L"≈¥0.4", L"estimate value");
+    Check(balance == L"¥99.6", L"balance value");
     Check(tooltip.find(L"估算") != std::wstring::npos, L"tooltip says estimate");
 
     AppConfig exact_config;
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
     PrintValue("today (exact)", today);
     PrintValue("tooltip (exact)", tooltip);
 
-    Check(today == L"¥0.35", L"exact value");
+    Check(today == L"¥0.4", L"exact value");
     Check(tooltip.find(L"精确") != std::wstring::npos, L"tooltip says exact");
 
     wchar_t test_message_buffer[1024]{};

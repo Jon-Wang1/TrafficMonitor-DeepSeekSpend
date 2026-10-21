@@ -64,6 +64,13 @@ int main()
     Check(FormatMicros(12900) == L"0.01", "amount: format micros 0.0129");
     Check(FormatMicros(12500) == L"0.01", "amount: format micros half");
     Check(FormatMicros(350000) == L"0.35", "amount: format 0.35");
+    Check(FormatCents1(170) == L"1.7", "amount: one decimal cents");
+    Check(FormatCents1(7747) == L"77.5", "amount: one decimal rounding");
+    Check(FormatCents1(99990) == L"999.9", "amount: one decimal max");
+    Check(FormatCents1(100000) == L"1000.0", "amount: one decimal above max");
+    Check(FormatMicros1(350000) == L"0.4", "amount: one decimal micros");
+    Check(FormatMicros1(1700000) == L"1.7", "amount: one decimal 1.70");
+    Check(FormatMicros1(1770000) == L"1.8", "amount: one decimal 1.77");
     Check(NormalizeCurrency(L"cny") == L"CNY", "amount: normalize currency");
 
     // ---------- day boundary ----------
