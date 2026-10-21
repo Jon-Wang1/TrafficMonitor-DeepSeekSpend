@@ -1,4 +1,6 @@
 # TrafficMonitor DeepSeek Spend Plugin
+<img width="975" height="75" alt="image" src="https://github.com/user-attachments/assets/fde3a9e8-a379-4435-90d7-39b2073f1214" />
+
 
 **TrafficMonitor-DeepSeekSpend** — 在 TrafficMonitor 的任务栏上显示 **今日 DeepSeek API 消费金额**，可选显示账户余额。
 
