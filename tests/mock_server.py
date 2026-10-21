@@ -3,6 +3,7 @@ import json
 import sys
 import time
 import urllib.parse
+from datetime import datetime, timedelta, timezone
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 BALANCES = ["100.00", "99.58", "99.58", "99.58"]
@@ -57,48 +58,51 @@ class Handler(http.server.BaseHTTPRequestHandler):
             })
             return
 
-        if path.endswith("/api/v0/usage/by_api_key/cost"):
+        if path.endswith("/api/v0/usage/cost"):
             if "/authfail/" in path:
                 self._send_json({"code": 40003, "msg": "Authorization Failed"})
                 return
 
             sign = -1.0 if "/negative/" in path else 1.0
-            now = int(time.time())
-            cny_buckets = [
-                {"time": now - 10, "cost": {"value": sign * 0.200000}},
-                {"time": now - 5, "cost": {"value": sign * 0.150000}},
+            today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
+            cny_usage = [
+                {"type": "PROMPT_CACHE_HIT_TOKEN", "amount": str(sign * 0.200000)},
+                {"type": "PROMPT_CACHE_MISS_TOKEN", "amount": str(sign * 0.150000)},
+                {"type": "REQUEST", "amount": "5"},
             ]
-            usd_buckets = [{"time": now - 5, "cost": {"value": 9.99}}]
+            usd_usage = [{"type": "RESPONSE_TOKEN", "amount": "9.99"}]
             self._send_json({
                 "code": 0,
                 "msg": "",
                 "data": {
                     "biz_code": 0,
                     "biz_msg": "",
-                    "biz_data": {
-                        "data": [
-                            {
-                                "currency": "CNY",
-                                "series": [
-                                    {
-                                        "api_key": {"name": "main", "tracking_id": "k1"},
-                                        "model": "deepseek-chat",
-                                        "buckets": cny_buckets,
-                                    }
-                                ],
-                            },
-                            {
-                                "currency": "USD",
-                                "series": [
-                                    {
-                                        "api_key": "other",
-                                        "model": "deepseek-chat",
-                                        "buckets": usd_buckets,
-                                    }
-                                ],
-                            },
-                        ]
-                    },
+                    "biz_data": [
+                        {
+                            "currency": "CNY",
+                            "total": [],
+                            "days": [
+                                {
+                                    "date": today,
+                                    "data": [
+                                        {"model": "deepseek-chat", "usage": cny_usage}
+                                    ],
+                                }
+                            ],
+                        },
+                        {
+                            "currency": "USD",
+                            "total": [],
+                            "days": [
+                                {
+                                    "date": today,
+                                    "data": [
+                                        {"model": "deepseek-chat", "usage": usd_usage}
+                                    ],
+                                }
+                            ],
+                        },
+                    ],
                 },
             })
             return

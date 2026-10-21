@@ -146,7 +146,7 @@ const wchar_t* CDeepSeekPlugin::GetInfo(PluginInfoIndex index)
     case TMI_COPYRIGHT:
         return L"© 2026";
     case TMI_VERSION:
-        return L"1.01";
+        return L"1.02";
     case TMI_URL:
         return L"";
     default:

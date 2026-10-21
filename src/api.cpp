@@ -4,6 +4,9 @@
 #include "json.h"
 #include "util.h"
 
+#include <cstdio>
+#include <ctime>
+#include <cwchar>
 #include <string>
 #include <utility>
 #include <vector>
@@ -168,11 +171,18 @@ ExactResult FetchExactCost(const std::wstring& user_token,
         return result;
     }
 
+    (void)start_time;
+    const std::time_t shifted = end_time + timezone_offset_seconds;
+    struct tm date_parts{};
+    gmtime_s(&date_parts, &shifted);
+    const int year = date_parts.tm_year + 1900;
+    const int month = date_parts.tm_mon + 1;
+    wchar_t date_key[16]{};
+    swprintf(date_key, 16, L"%04d-%02d-%02d", year, month, date_parts.tm_mday);
+
     const std::wstring url =
-        base_url + L"/api/v0/usage/by_api_key/cost?start=" +
-        std::to_wstring(static_cast<long long>(start_time)) + L"&end=" +
-        std::to_wstring(static_cast<long long>(end_time)) + L"&tz=" +
-        std::to_wstring(timezone_offset_seconds);
+        base_url + L"/api/v0/usage/cost?month=" + std::to_wstring(month) +
+        L"&year=" + std::to_wstring(year);
 
     std::vector<HttpHeader> headers{
         {L"Authorization", L"Bearer " + user_token},
@@ -251,6 +261,7 @@ ExactResult FetchExactCost(const std::wstring& user_token,
 
     const std::wstring wanted_currency = NormalizeCurrency(currency);
     int64_t total_micros = 0;
+    bool currency_matched = false;
 
     for (const JsonValue& currency_entry : currencies->array) {
         if (!currency_entry.IsObject()) {
@@ -260,53 +271,70 @@ ExactResult FetchExactCost(const std::wstring& user_token,
         const std::wstring entry_currency = currency_value != nullptr
             ? NormalizeCurrency(Utf8ToWide(currency_value->AsString()))
             : std::wstring();
-        if (!entry_currency.empty() && entry_currency != wanted_currency) {
+        if (entry_currency != wanted_currency) {
+            continue;
+        }
+        currency_matched = true;
+
+        const JsonValue* days = currency_entry.Find("days");
+        if (days == nullptr || !days->IsArray()) {
             continue;
         }
 
-        const JsonValue* series = currency_entry.Find("series");
-        if (series == nullptr || !series->IsArray()) {
-            continue;
-        }
+        for (const JsonValue& day : days->array) {
+            if (!day.IsObject()) {
+                continue;
+            }
+            const JsonValue* date_value = day.Find("date");
+            if (date_value == nullptr || !date_value->IsString() ||
+                Utf8ToWide(date_value->string_value) != date_key) {
+                continue;
+            }
 
-        for (const JsonValue& series_entry : series->array) {
-            if (!series_entry.IsObject()) {
-                continue;
+            const JsonValue* models = day.Find("data");
+            if (models == nullptr || !models->IsArray()) {
+                break;
             }
-            const JsonValue* buckets = series_entry.Find("buckets");
-            if (buckets == nullptr || !buckets->IsArray()) {
-                continue;
-            }
-            for (const JsonValue& bucket : buckets->array) {
-                if (!bucket.IsObject()) {
+
+            for (const JsonValue& model : models->array) {
+                if (!model.IsObject()) {
                     continue;
                 }
-                if (const JsonValue* time_value = bucket.Find("time")) {
-                    if (time_value->IsNumber()) {
-                        const auto bucket_time = static_cast<std::time_t>(time_value->number_value);
-                        if (bucket_time < start_time || bucket_time > end_time) {
-                            continue;
-                        }
+                const JsonValue* usage = model.Find("usage");
+                if (usage == nullptr || !usage->IsArray()) {
+                    continue;
+                }
+                for (const JsonValue& item : usage->array) {
+                    if (!item.IsObject()) {
+                        continue;
                     }
+                    const JsonValue* type_value = item.Find("type");
+                    const std::wstring type_text = type_value != nullptr
+                        ? Utf8ToWide(type_value->AsString())
+                        : std::wstring();
+                    if (type_text == L"REQUEST") {
+                        continue;
+                    }
+                    const JsonValue* amount = item.Find("amount");
+                    if (amount == nullptr) {
+                        continue;
+                    }
+                    const int64_t micros = AmountToMicros(amount->AsString());
+                    if (micros < 0) {
+                        result.negative_sum_micros += micros;
+                    } else {
+                        result.positive_sum_micros += micros;
+                    }
+                    total_micros += micros;
+                    ++result.bucket_count;
                 }
-                const JsonValue* cost = bucket.Find("cost");
-                if (cost == nullptr) {
-                    continue;
-                }
-                const int64_t micros = CostValueToMicros(*cost);
-                if (micros < 0) {
-                    result.negative_sum_micros += micros;
-                } else {
-                    result.positive_sum_micros += micros;
-                }
-                total_micros += micros;
-                ++result.bucket_count;
             }
+            break;
         }
+        break;
     }
 
-    result.found_currency = result.bucket_count > 0 || result.positive_sum_micros != 0 ||
-                            result.negative_sum_micros != 0;
+    result.found_currency = currency_matched;
     if (result.positive_sum_micros == 0 && result.negative_sum_micros < 0) {
         total_micros = -result.negative_sum_micros;
     } else if (total_micros < 0) {
